@@ -49,7 +49,7 @@ public class MaterialiseConnection : MonoBehaviour {
         string encodedData = Convert.ToBase64String(filebytes, Base64FormattingOptions.InsertLineBreaks);
         string urlenc = WWW.EscapeURL(encodedData);
 		
-		Dictionary<string,string> parameters = new Dictionary<string, string>();		
+		Dictionary<string,string> parameters = new Dictionary<string, string>();
 		parameters.Add("file", urlenc);
 		parameters.Add("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
 		
@@ -69,6 +69,51 @@ public class MaterialiseConnection : MonoBehaviour {
         else
 			Debug.Log(uploadRequest.response.Text);
 		
+	}
+	
+	public IEnumerator getPrices(){
+		Dictionary<string,object> parameters = new Dictionary<string, object>();
+		Dictionary<string,string> modelParameters = new Dictionary<string, string>();
+		Dictionary<string,string> shippingParameters = new Dictionary<string, string>();
+		
+		List<Dictionary<string,string>> modelsList = new List<Dictionary<string, string>>();
+		
+		modelParameters.Add("ModelReference", "Test");
+		modelParameters.Add("MaterialID","035f4772-da8a-400b-8be4-2dd344b28ddb");
+		modelParameters.Add("FinishID", "bba2bebb-8895-4049-aeb0-ab651cee2597");
+		modelParameters.Add("Quantity", "1");
+		modelParameters.Add("XDimMm", "10");
+		modelParameters.Add("YDimMm", "10");
+		modelParameters.Add("ZDimMm", "10");
+		modelParameters.Add("VolumeCm3", "1");
+		modelParameters.Add("SurfaceCm2", "6");
+		
+		modelsList.Add(modelParameters);
+		
+		shippingParameters.Add("CountryCode", "CL");
+		shippingParameters.Add("City", "Santiago");
+		shippingParameters.Add("ZipCode", "8320000");
+		
+		parameters.Add("models", modelsList);
+		parameters.Add("shipmentInfo", shippingParameters);
+		
+		string data = MiniJSON.Json.Serialize(parameters);
+		Debug.Log(data);
+		HTTP.Request priceRequest = new HTTP.Request("POST", MaterialiseUrls.PRICES_URL, UTF8Encoding.UTF8.GetBytes (data));
+		priceRequest.SetHeader("Accept", "application/json");
+        priceRequest.SetHeader("Content-type", "application/json");
+		priceRequest.SetHeader("APICode", MaterialiseKeys.API_CODE);
+		
+		priceRequest.Send();
+		
+		while(!priceRequest.isDone) yield return new WaitForEndOfFrame();
+		
+        if (priceRequest.exception != null)
+			Debug.LogError(priceRequest.exception.ToString());
+                 
+        else
+			Debug.Log(priceRequest.response.Text);
+
 	}
 	
 	public static string toQueryString(Dictionary<string, string> parameters){

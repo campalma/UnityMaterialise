@@ -8,8 +8,9 @@ public class ConnectionClient : MonoBehaviour {
 		MaterialiseConnection connection = MaterialiseConnection.Instance;
 		yield return StartCoroutine(connection.materials());
 		
-		string fileLocation = "Assets/cube.stl";
-		yield return StartCoroutine(connection.uploadFile(fileLocation));
+//		string fileLocation = "Assets/cube.stl";
+//		yield return StartCoroutine(connection.uploadFile(fileLocation));
+		yield return StartCoroutine(connection.getPrices());
 	}
 	
 	// Update is called once per frame
