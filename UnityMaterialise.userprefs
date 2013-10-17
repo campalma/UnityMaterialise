@@ -6,11 +6,7 @@
         <State expanded="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Assets" expanded="True">
-              <Node name="UniWeb" expanded="True">
-                <Node name="Plugins" expanded="True">
-                  <Node name="WebSocket.cs" selected="True" />
-                </Node>
-              </Node>
+              <Node name="ConnectionClient.cs" selected="True" />
             </Node>
           </Node>
         </State>
