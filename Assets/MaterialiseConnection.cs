@@ -49,14 +49,20 @@ public class MaterialiseConnection : MonoBehaviour {
         string encodedData = Convert.ToBase64String(filebytes, Base64FormattingOptions.InsertLineBreaks);
         string urlenc = WWW.EscapeURL(encodedData);
 		
-		Dictionary<string,string> parameters = new Dictionary<string, string>();
-		parameters.Add("file", urlenc);
-		parameters.Add("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
+		//Dictionary<string,string> parameters = new Dictionary<string, string>();
+		WWWForm parameters = new WWWForm();
+		parameters.AddField("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
+		parameters.AddBinaryData("file", filebytes, "cube.stl", "application/x-octetstream");
+		//parameters.Add("file", urlenc);
+		//parameters.Add("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
 		
 		string data = MiniJSON.Json.Serialize(parameters);
-		HTTP.Request uploadRequest = new HTTP.Request("POST", MaterialiseUrls.UPLOAD_URL, UTF8Encoding.UTF8.GetBytes (data));
-		uploadRequest.SetHeader("Accept", "application/json");
-        uploadRequest.SetHeader("Content-type", "application/x-www-form-urlencoded");
+		HTTP.Request uploadRequest = new HTTP.Request(MaterialiseUrls.UPLOAD_URL, parameters);
+		uploadRequest.SetHeader("Accept", "*/*");
+		uploadRequest.SetHeader("Expect", "100-continue");
+		
+        uploadRequest.SetHeader("Content-type", "multipart/form-data ");
+		uploadRequest.SetHeader("User-Agent", "PECL::HTTP/1.7.6 (PHP/5.3.15)");
 		
 		Debug.Log("Upload Request Started");
 		uploadRequest.Send();
