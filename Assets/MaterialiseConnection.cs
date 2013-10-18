@@ -53,28 +53,26 @@ public class MaterialiseConnection : MonoBehaviour {
 		WWWForm parameters = new WWWForm();
 		parameters.AddField("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
 		parameters.AddBinaryData("file", filebytes, "cube.stl", "application/x-octetstream");
-		//parameters.Add("file", urlenc);
-		//parameters.Add("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
 		
 		string data = MiniJSON.Json.Serialize(parameters);
 		HTTP.Request uploadRequest = new HTTP.Request(MaterialiseUrls.UPLOAD_URL, parameters);
-		uploadRequest.SetHeader("Accept", "*/*");
-		uploadRequest.SetHeader("Expect", "100-continue");
-		
-        uploadRequest.SetHeader("Content-type", "multipart/form-data ");
-		uploadRequest.SetHeader("User-Agent", "PECL::HTTP/1.7.6 (PHP/5.3.15)");
 		
 		Debug.Log("Upload Request Started");
+		uploadRequest.OnRedirect = printRedirectUrl;
 		uploadRequest.Send();
 		
 		while(!uploadRequest.isDone) yield return new WaitForEndOfFrame();
 		
         if (uploadRequest.exception != null)
-			Debug.LogError(uploadRequest.exception.ToString());
-                 
-        else
-			Debug.Log(uploadRequest.response.Text);
+			Debug.Log(uploadRequest.exception);
+		else
+			Application.OpenURL(uploadRequest.response.GetHeader("Location"));
+	
 		
+	}
+	
+	private void printRedirectUrl(Uri uri){
+		Debug.Log(uri.ToString());
 	}
 	
 	public IEnumerator getPrices(){
