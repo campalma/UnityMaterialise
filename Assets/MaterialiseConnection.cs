@@ -6,9 +6,15 @@ using System;
 using System.Text;
 
 public class MaterialiseConnection : MonoBehaviour {
-
+	
+	//Singleton
  	private static MaterialiseConnection m_instance;
-        
+	
+	//Responses to queries
+	public IList materials;
+    public IDictionary prices;
+	public string modelUrl;
+	
     public static MaterialiseConnection Instance{
         get{
             if(m_instance == null)
@@ -21,13 +27,12 @@ public class MaterialiseConnection : MonoBehaviour {
             m_instance = this;
     }
 	
-	public IEnumerator materials(){
+	public IEnumerator getMaterials(){
 		Dictionary<string,string> parameters = new Dictionary<string, string>();
 		parameters.Add("user", MaterialiseKeys.EMAIL);
 		HTTP.Request materialsRequest = new HTTP.Request("GET", MaterialiseUrls.MATERIALS_URL+toQueryString(parameters));
 		materialsRequest.SetHeader("Accept", "application/json");
         materialsRequest.SetHeader("Content-type", "application/x-www-form-urlencoded");
-		Debug.Log("Materials Request Started");
 		materialsRequest.Send();
 		
 		while(!materialsRequest.isDone) yield return new WaitForEndOfFrame();
@@ -37,7 +42,8 @@ public class MaterialiseConnection : MonoBehaviour {
 		}
                  
         else{
-			Debug.Log(materialsRequest.response.Text);
+			IDictionary response = (IDictionary)MiniJSON.Json.Deserialize(materialsRequest.response.Text);
+			this.materials = (IList)response["materials"];
 		}
 	}
 	
@@ -57,8 +63,7 @@ public class MaterialiseConnection : MonoBehaviour {
 		string data = MiniJSON.Json.Serialize(parameters);
 		HTTP.Request uploadRequest = new HTTP.Request(MaterialiseUrls.UPLOAD_URL, parameters);
 		
-		Debug.Log("Upload Request Started");
-		uploadRequest.OnRedirect = printRedirectUrl;
+		uploadRequest.OnRedirect = onRedirectCallback;
 		uploadRequest.Send();
 		
 		while(!uploadRequest.isDone) yield return new WaitForEndOfFrame();
@@ -66,13 +71,11 @@ public class MaterialiseConnection : MonoBehaviour {
         if (uploadRequest.exception != null)
 			Debug.Log(uploadRequest.exception);
 		else
-			Application.OpenURL(uploadRequest.response.GetHeader("Location"));
-	
-		
+			modelUrl = uploadRequest.response.GetHeader("Location");
 	}
 	
-	private void printRedirectUrl(Uri uri){
-		Debug.Log(uri.ToString());
+	private void onRedirectCallback(Uri uri){
+		;
 	}
 	
 	public IEnumerator getPrices(){
@@ -102,7 +105,6 @@ public class MaterialiseConnection : MonoBehaviour {
 		parameters.Add("shipmentInfo", shippingParameters);
 		
 		string data = MiniJSON.Json.Serialize(parameters);
-		Debug.Log(data);
 		HTTP.Request priceRequest = new HTTP.Request("POST", MaterialiseUrls.PRICES_URL, UTF8Encoding.UTF8.GetBytes (data));
 		priceRequest.SetHeader("Accept", "application/json");
         priceRequest.SetHeader("Content-type", "application/json");
@@ -115,8 +117,9 @@ public class MaterialiseConnection : MonoBehaviour {
         if (priceRequest.exception != null)
 			Debug.LogError(priceRequest.exception.ToString());
                  
-        else
-			Debug.Log(priceRequest.response.Text);
+        else{
+			prices = (IDictionary)MiniJSON.Json.Deserialize(priceRequest.response.Text);
+		}
 
 	}
 	

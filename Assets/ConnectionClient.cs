@@ -6,11 +6,19 @@ public class ConnectionClient : MonoBehaviour {
 	// Use this for initialization
 	IEnumerator Start () {
 		MaterialiseConnection connection = MaterialiseConnection.Instance;
-		yield return StartCoroutine(connection.materials());
 		
+		//Materials example
+		yield return StartCoroutine(connection.getMaterials());
+		Debug.Log(connection.materials);
+		
+		//File example
 		string fileLocation = "Assets/cube.stl";
 		yield return StartCoroutine(connection.uploadFile(fileLocation));
-//		yield return StartCoroutine(connection.getPrices());
+		Debug.Log(connection.modelUrl);
+		
+		//Prices example
+		yield return StartCoroutine(connection.getPrices());
+		Debug.Log(connection.prices);
 	}
 	
 	// Update is called once per frame
