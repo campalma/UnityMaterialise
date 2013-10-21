@@ -7,7 +7,7 @@ using System.Text;
 
 public class MaterialiseConnection : MonoBehaviour {
 
- private static MaterialiseConnection m_instance;
+ 	private static MaterialiseConnection m_instance;
         
     public static MaterialiseConnection Instance{
         get{
