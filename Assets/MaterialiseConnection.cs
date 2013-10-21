@@ -37,9 +37,8 @@ public class MaterialiseConnection : MonoBehaviour {
 		
 		while(!materialsRequest.isDone) yield return new WaitForEndOfFrame();
                 
-        if (materialsRequest.exception != null){
+        if (materialsRequest.exception != null)
 			Debug.LogError(materialsRequest.exception.ToString());
-		}
                  
         else{
 			IDictionary response = (IDictionary)MiniJSON.Json.Deserialize(materialsRequest.response.Text);
@@ -54,15 +53,14 @@ public class MaterialiseConnection : MonoBehaviour {
         fs.Read(filebytes, 0, Convert.ToInt32(fs.Length));
         string encodedData = Convert.ToBase64String(filebytes, Base64FormattingOptions.InsertLineBreaks);
         string urlenc = WWW.EscapeURL(encodedData);
-		
-		//Dictionary<string,string> parameters = new Dictionary<string, string>();
+
 		WWWForm parameters = new WWWForm();
 		parameters.AddField("plugin", MaterialiseKeys.PRODUCT_TYPE_ID);
 		parameters.AddBinaryData("file", filebytes, "cube.stl", "application/x-octetstream");
 		
 		string data = MiniJSON.Json.Serialize(parameters);
-		HTTP.Request uploadRequest = new HTTP.Request(MaterialiseUrls.UPLOAD_URL, parameters);
 		
+		HTTP.Request uploadRequest = new HTTP.Request(MaterialiseUrls.UPLOAD_URL, parameters);
 		uploadRequest.OnRedirect = onRedirectCallback;
 		uploadRequest.Send();
 		
@@ -74,32 +72,28 @@ public class MaterialiseConnection : MonoBehaviour {
 			modelUrl = uploadRequest.response.GetHeader("Location");
 	}
 	
-	private void onRedirectCallback(Uri uri){
-		;
-	}
-	
-	public IEnumerator getPrices(){
+	public IEnumerator getPrices(string modelReference, string materialID, string finishID, string quantity, string xDimMm, string yDimMm, string zDimMm, string volumeCm3, string surfaceCm2, string countryCode, string city, string zipCode){
 		Dictionary<string,object> parameters = new Dictionary<string, object>();
 		Dictionary<string,string> modelParameters = new Dictionary<string, string>();
 		Dictionary<string,string> shippingParameters = new Dictionary<string, string>();
 		
 		List<Dictionary<string,string>> modelsList = new List<Dictionary<string, string>>();
 		
-		modelParameters.Add("ModelReference", "Test");
-		modelParameters.Add("MaterialID","035f4772-da8a-400b-8be4-2dd344b28ddb");
-		modelParameters.Add("FinishID", "bba2bebb-8895-4049-aeb0-ab651cee2597");
-		modelParameters.Add("Quantity", "1");
-		modelParameters.Add("XDimMm", "10");
-		modelParameters.Add("YDimMm", "10");
-		modelParameters.Add("ZDimMm", "10");
-		modelParameters.Add("VolumeCm3", "1");
-		modelParameters.Add("SurfaceCm2", "6");
+		modelParameters.Add("ModelReference", modelReference);
+		modelParameters.Add("MaterialID",materialID);
+		modelParameters.Add("FinishID", finishID);
+		modelParameters.Add("Quantity", quantity);
+		modelParameters.Add("XDimMm", xDimMm);
+		modelParameters.Add("YDimMm", yDimMm);
+		modelParameters.Add("ZDimMm", zDimMm);
+		modelParameters.Add("VolumeCm3", volumeCm3);
+		modelParameters.Add("SurfaceCm2", surfaceCm2);
 		
 		modelsList.Add(modelParameters);
 		
-		shippingParameters.Add("CountryCode", "CL");
-		shippingParameters.Add("City", "Santiago");
-		shippingParameters.Add("ZipCode", "8320000");
+		shippingParameters.Add("CountryCode", countryCode);
+		shippingParameters.Add("City", city);
+		shippingParameters.Add("ZipCode", zipCode);
 		
 		parameters.Add("models", modelsList);
 		parameters.Add("shipmentInfo", shippingParameters);
@@ -123,7 +117,11 @@ public class MaterialiseConnection : MonoBehaviour {
 
 	}
 	
-	public static string toQueryString(Dictionary<string, string> parameters){
+	private void onRedirectCallback(Uri uri){
+		;
+	}
+	
+	private string toQueryString(Dictionary<string, string> parameters){
     	List<string> a = new List<string>();
         foreach(KeyValuePair<string, string> pair in parameters){                        
         	a.Add(pair.Key+"="+WWW.EscapeURL(pair.Value));
